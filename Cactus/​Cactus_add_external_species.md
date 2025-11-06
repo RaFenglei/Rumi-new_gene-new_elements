@@ -1,5 +1,5 @@
-# 使用ANNEVO来注释基因组
-[ANNEVO](https://github.com/xjtu-omics/ANNEVO)是一种基于深度学习的从头开始的基因注释方法，用于理解基因组功能。ANNEVO 能够直接从基因组中模拟不同物种的远端序列信息和联合进化关系。
+# 使用Cactus在最外枝添加基因组
+[Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/tree/master)是一个无参考的全基因组比对程序，并且也可以用来构建Pan-genome
 
 
 ## Step 1：安装
@@ -93,3 +93,12 @@ done
 # Fine tuning deep learning model
 python fine_tune.py --model_path path_to_existing_model.pt --model_save_path path_to_new_model.pt --h5_path ${h5_data_path}
 ```
+
+
+
+
+
+
+Reference:
+[Cactus论文](https://www.nature.com/articles/s41586-020-2871-y)
+[Hal论文](https://academic.oup.com/bioinformatics/article/29/10/1341/256598?login=false)
