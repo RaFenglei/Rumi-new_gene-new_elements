@@ -18,7 +18,7 @@ We sincerely thank the following individuals for their invaluable assistance:
 - **Lei Chen** (Professor, Northwestern Polytechnical University)
 - **Kun Wang** (Professor, Northwestern Polytechnical University)
 - **Chao Zhang** (Professor, Peking University)
-- **Lei Hu** (PhD candidate, Westlake University)
+- **[Lei Hu](www.github.com/DBinary)** (PhD candidate, Westlake University)
 - **Peng Liu** (PhD candidate, Tsinghua University)
 - **Bolin Zhu** (PhD candidate, BGI)
 - And everyone else who provided support for this project
