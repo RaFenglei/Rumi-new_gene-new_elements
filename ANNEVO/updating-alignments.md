@@ -1,5 +1,6 @@
 # 使用ANNEVO来注释基因组
-Because of the hierarchical structure of the alignments Cactus produces, you can add, remove, or update genomes to an existing alignment without recomputing the entire alignment from scratch. This document briefly outlines the steps required. Ensure you have the [HAL toolkit](https://github.com/ComparativeGenomicsToolkit/cactus) installed; it comes with alignment-modification tools which we'll be using.
+[ANNEVO]([https://github.com/ComparativeGenomicsToolkit/cactus](https://github.com/xjtu-omics/ANNEVO))是一种基于深度学习的从头开始的基因注释方法，用于理解基因组功能。ANNEVO 能够直接从基因组中模拟不同物种的远端序列信息和联合进化关系。
+
 
 **Important: back up your alignment file before attempting any of these operations. If something goes wrong, the file may be completely unrecoverable.**
 ## Deleting a genome
