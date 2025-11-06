@@ -1,4 +1,4 @@
-# Updating Cactus alignments
+# 使用ANNEVO来注释基因组
 Because of the hierarchical structure of the alignments Cactus produces, you can add, remove, or update genomes to an existing alignment without recomputing the entire alignment from scratch. This document briefly outlines the steps required. Ensure you have the [HAL toolkit](https://github.com/ComparativeGenomicsToolkit/cactus) installed; it comes with alignment-modification tools which we'll be using.
 
 **Important: back up your alignment file before attempting any of these operations. If something goes wrong, the file may be completely unrecoverable.**
