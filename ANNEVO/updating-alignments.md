@@ -29,7 +29,9 @@ cd /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/02.ANNEVO/01.de
 echo End Time is `date`
 ```
 **但是如果你是有GPU的，还是建议使用下面的Step-by-step Execution生成**
+
 1：预测每个核苷酸的三种信息类型（建议在 GPU 资源丰富的环境中执行）
+
 2：将 3 类信息解码为生物学上有效的基因结构（建议在 CPU 资源丰富的环境中进行）
 ```sh
 # Nucleotide prediction
