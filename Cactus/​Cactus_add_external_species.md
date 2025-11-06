@@ -95,10 +95,7 @@ python fine_tune.py --model_path path_to_existing_model.pt --model_save_path pat
 ```
 
 
+## Reference:
 
-
-
-
-Reference:
 [Cactus论文](https://www.nature.com/articles/s41586-020-2871-y)
 [Hal论文](https://academic.oup.com/bioinformatics/article/29/10/1341/256598?login=false)
