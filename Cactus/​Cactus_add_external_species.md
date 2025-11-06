@@ -17,71 +17,102 @@ $halStats ../01.genome/out.hal
 hal v2.2
 ((camel:0.0244494,(pig:0.0269299,((xilu:0.0318519,((pronghorn:0.0119009,(giraffe:0.00409218,okapi:0.00623621)Anc10:0.00487476)Anc08:0.000706151,((muskdeer:0.00961721,(cattle:0.0071056,(sheep:0.00238328,goat:0.0023734)Anc16:0.0058297)Anc13:0.00197833)Anc11:0.000900202,(((reev_muntjac:0.0041239,ECEP:0.00390819)Anc17:0.000983137,(TUNLU:0.00275209,(TL:0.00249469,((mhl:0.00071661,ML:0.000762197)Anc23:0.000915221,PL:0.00192979)Anc22:0.000477065)Anc21:0.000227643)Anc18:0.00125769)Anc14:0.000957613,((HJ:0.00410087,PZ:0.00410087)Anc19:0.00263453,(mule_deer:0.00285365,XL:0.00281675)Anc20:0.00210855)Anc15:0.000927252)Anc12:0.0056893)Anc09:0.000885046)Anc06:0.0111833)Anc04:0.0106196,(hippo:0.0192975,(gray_whale:0.00756346,killer_whale:0.00970889)Anc07:0.0108208)Anc05:0.00218731)Anc03:0.00439133)Anc02:0.00331519)Anc01:0.0162236,tapir:0.0162236)Anc00;
 ```
-**但是如果你是有GPU的，还是建议使用下面的Step-by-step Execution生成**
-1：预测每个核苷酸的三种信息类型（建议在 GPU 资源丰富的环境中执行）
-2：将 3 类信息解码为生物学上有效的基因结构（建议在 CPU 资源丰富的环境中进行）
-```sh
-# Nucleotide prediction
-python prediction.py --genome path_to_genome --model_path path_to_model --model_prediction_path path_to_save_predction
 
-# Gene structure decoding
-python decoding.py --genome path_to_genome --model_prediction_path path_to_save_predction --output path_to_gff --threads 48 
+然后提取当前树的根节点（Anc00）
+```sh
+cat > 01.get_old_hal.sh << 'EOF'
+halExtract /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactuss/01.genome/out.hal 01.existing_tree.hal --root Anc00
+hal2fasta 01.existing_tree.hal Anc00 > 01.existing_tree.fa
+EOF
 ```
 
-## Step 3：重训练模型
-官方只提供了Mammalia等比较常见的谱系模型，如果需要在特定进化枝上合并其他物种或重新训练 ANNEVO （比如利用注释最好的牛羊鹿训练反刍谱系模型），可以按照以下脚本进行作：
+## Step 2：创建新的系统发育树定义
+在现有树(Anc00:0.0162236,tapir:0.0162236)Anc00;的基础上，添加human分支
+需要注意的是，0.0162236只是预估值，填入进去cactus还会重新计算
 ```sh
-train_species_list="The species list used for training model"
-val_species_list="The species list used for validating model"
-h5_data_path="The path to store h5 file" 
-mkdir -p tmp
-
-# The file must be cleared before each run.
-rm -f ${h5_data_path}/train.h5 ${h5_data_path}/train_with_intergenic.h5
-rm -f ${h5_data_path}/val.h5 ${h5_data_path}/val_with_intergenic.h5
-
-for species_name in "${train_species_list[@]}"; do
-    path_to_genome="The path to species genome"
-    path_to_annotation="The path to species annotation"
-    # Filter out duplicated gene IDs and other issues that may cause parsing errors in the Biopython package
-    python src/filter_wrong_record.py --input_file ${path_to_annotation} --output_file "tmp/tmp_${species_name}.gff"
-    # Convert the genome sequence and annotation into H5 data for model training.
-    python generate_datasets.py --genome ${path_to_genome} --annotation "tmp/tmp_${species_name}.gff" --output_file "${h5_data_path}/train" --threads 64
-    rm -f "tmp/tmp_${species_name}.gff"
-done
-for species_name in "${val_species_list[@]}"; do
-    path_to_genome="The path to species genome"
-    path_to_annotation="The path to species annotation"
-    python src/filter_wrong_record.py --input_file ${path_to_annotation} --output_file "tmp/tmp_${species_name}.gff"
-    python generate_datasets.py --genome ${path_to_genome} --annotation "tmp/tmp_${species_name}.gff" --output_file "${h5_data_path}/val" --threads 64
-    rm -f "tmp/tmp_${species_name}.gff"
-done
-
-# Train the deep learning model
-python model_train.py --h5_path ${h5_data_path} --model_save_path path_to_new_model.pt
+cat > 02.cactus_add_human.in << 'EOF'
+(Anc00:0.0162236,human:0.0162236)AncHuman;
+Anc00 /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactuss/02.add_human/01.existing_tree.fa
+human /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactuss/02.add_human/00.human.fa
+EOF
 ```
 
-**当然，如果只是发现与你的物种密切相关的物种的基因组有限或者不可使用时间，可以选择 ANNEVO 的五种主要训练模型之一作为微调的起点**
+## Step 3：创建Cactus作业脚本
 ```sh
-# Filter out duplicated gene IDs and other issues that may cause parsing errors in the Biopython package
-fine_tune_species_list="The species list used for fine tuning model"
-h5_data_path="The path to store h5 file"
-mkdir -p tmp
+cat > 02.cactus_add_human.sh << 'EOF'
+#!/usr/bin/bash
+#PBS -V
+set -exo
 
-# The file must be cleared before each run.
-rm -f ${h5_data_path}/fine_tune.h5 ${h5_data_path}/fine_tune_with_intergenic.h5
+source /public/home/wangwen_lab/lizihe/.bashrc
+conda activate /public/home/wangwen_lab/lizihe/soft/anaconda3/envs/cactus
+export PATH=/public/home/wangwen_lab/lizihe/soft/cactus-bin-v2.9.4/bin:$PATH
 
-for species_name in "${fine_tune_species_list[@]}"; do
-    path_to_genome="The path to species genome"
-    path_to_annotation="The path to species annotation"
-    python src/filter_wrong_record.py --input_file ${path_to_annotation} --output_file "tmp/tmp_${species_name}.gff"
-    python generate_datasets.py --genome ${path_to_genome} --annotation "tmp/tmp_${species_name}.gff" --output_file "${h5_data_path}/fine_tune" --threads 64
-    rm -f "tmp/tmp_${species_name}.gff"
-done
+cd /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactuss/02.add_human
+mkdir -p jobstore_human jobstore_human/logs
+cp 02.cactus_add_human.in jobstore_human/
 
-# Fine tuning deep learning model
-python fine_tune.py --model_path path_to_existing_model.pt --model_save_path path_to_new_model.pt --h5_path ${h5_data_path}
+## Preprocessor
+cactus-preprocess ./jobstore_human/0 02.cactus_add_human.in jobstore_human/02.cactus_add_human.in \
+    --maxCores 100 --inputNames Anc00 human \
+    --logFile jobstore_human/logs/preprocess-AncHuman.log
+
+## Alignment
+### Blast
+cactus-blast ./jobstore_human/1 jobstore_human/02.cactus_add_human.in jobstore_human/AncHuman.paf \
+    --root AncHuman --maxCores 100 \
+    --logFile jobstore_human/logs/blast-AncHuman.log
+
+### Align
+cactus-align ./jobstore_human/2 jobstore_human/02.cactus_add_human.in jobstore_human/AncHuman.paf jobstore_human/out_with_human.hal \
+    --root AncHuman --maxCores 100 \
+    --logFile jobstore_human/logs/align-AncHuman.log
+
+## 提取最终的human祖先序列（可选）
+hal2fasta jobstore_human/out_with_human.hal AncHuman --hdf5InMemory > jobstore_human/AncHuman.fa
+
+## 验证结果
+halValidate jobstore_human/out_with_human.hal --hdf5InMemory
+
+EOF
 ```
+
+**最终输出结构是**
+```txt
+/data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactuss/02.add_human/
+├── jobstore_human/                    # 主要输出目录
+│   ├── 02.cactus_add_human.in         # 复制的输入文件
+│   ├── AncHuman.paf                   # Blast结果文件
+│   ├── out_with_human.hal             # **最终输出的HAL文件**
+│   ├── AncHuman.fa                    # 祖先序列文件（可选）
+│   └── logs/                          # 日志目录
+│       ├── preprocess-AncHuman.log
+│       ├── blast-AncHuman.log
+│       └── align-AncHuman.log
+├── existing_tree.fa                   # 现有树的根节点序列
+└── 02.cactus_add_human.in            # 原始输入文件
+```
+jobstore_human/out_with_human.hal​​ - ​​最重要的文件​​，包含human的完整多序列比对结果
+​​jobstore_human/AncHuman.paf​​ - Blast比对结果
+​​jobstore_human/AncHuman.fa​​ - 新根节点AncHuman的祖先序列
+
+同时你需要注意的是
+（1）如果是在计算节点直接运行，请先加载环境
+``` sh
+source /public/home/wangwen_lab/lizihe/.bashrc
+conda activate /public/home/wangwen_lab/lizihe/soft/anaconda3/envs/cactus
+export PATH=/public/home/wangwen_lab/lizihe/soft/cactus-bin-v2.9.4/bin:$PATH
+
+bash 02.cactus_add_human.sh > 02.cactus_add_human.log 2>&1
+```
+（1）如果是投递到qsub运行，直接投递就好
+``` sh
+#source /public/home/wangwen_lab/lizihe/.bashrc
+#conda activate /public/home/wangwen_lab/lizihe/soft/anaconda3/envs/cactus
+#export PATH=/public/home/wangwen_lab/lizihe/soft/cactus-bin-v2.9.4/bin:$PATH
+qsub -q high1 -l nodes=1:ppn=128 02.cactus_add_human.sh
+
+
 
 
 ## Reference:
