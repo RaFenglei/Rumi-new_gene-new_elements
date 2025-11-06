@@ -17,7 +17,7 @@ We sincerely thank the following individuals for their invaluable assistance:
 - **Zheng Zhou** (PhD candidate, Northwestern Polytechnical University)
 - **Lei Chen** (Professor, Northwestern Polytechnical University)
 - **Kun Wang** (Professor, Northwestern Polytechnical University)
-- **Chao Zhang** (Research Fellow, Peking University)
+- **Chao Zhang** (Professor, Peking University)
 - **Lei Hu** (PhD candidate, Westlake University)
 - **Peng Liu** (PhD candidate, Tsinghua University)
 - **Bolin Zhu** (PhD candidate, BGI)
