@@ -26,7 +26,8 @@ hal2fasta 01.existing_tree.hal Anc00 > 01.existing_tree.fa
 EOF
 ```
 
-## Step 2：创建新的系统发育树定义
+
+## Step 3：创建新的系统发育树定义
 在现有树(Anc00:0.0162236,tapir:0.0162236)Anc00;的基础上，添加human分支
 需要注意的是，0.0162236只是预估值，填入进去cactus还会重新计算
 ```sh
@@ -37,7 +38,8 @@ human /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactuss/0
 EOF
 ```
 
-## Step 3：创建Cactus作业脚本
+
+## Step 4：创建Cactus作业脚本
 ```sh
 cat > 02.cactus_add_human.sh << 'EOF'
 #!/usr/bin/bash
@@ -113,7 +115,7 @@ bash 02.cactus_add_human.sh > 02.cactus_add_human.log 2>&1
 #conda activate /public/home/wangwen_lab/lizihe/soft/anaconda3/envs/cactus
 #export PATH=/public/home/wangwen_lab/lizihe/soft/cactus-bin-v2.9.4/bin:$PATH
 qsub -q high1 -l nodes=1:ppn=128 02.cactus_add_human.sh
-
+``` 
 
 
 
