@@ -93,7 +93,9 @@ EOF
 └── 02.cactus_add_human.in            # 原始输入文件
 ```
 jobstore_human/out_with_human.hal​​ - ​​最重要的文件​​，包含human的完整多序列比对结果
+
 ​​jobstore_human/AncHuman.paf​​ - Blast比对结果
+
 ​​jobstore_human/AncHuman.fa​​ - 新根节点AncHuman的祖先序列
 
 同时你需要注意的是
@@ -105,7 +107,7 @@ export PATH=/public/home/wangwen_lab/lizihe/soft/cactus-bin-v2.9.4/bin:$PATH
 
 bash 02.cactus_add_human.sh > 02.cactus_add_human.log 2>&1
 ```
-（1）如果是投递到qsub运行，直接投递就好
+（2）如果是投递到qsub运行，直接投递就好
 ``` sh
 #source /public/home/wangwen_lab/lizihe/.bashrc
 #conda activate /public/home/wangwen_lab/lizihe/soft/anaconda3/envs/cactus
