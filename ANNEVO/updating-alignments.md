@@ -2,11 +2,16 @@
 [ANNEVO]([https://github.com/ComparativeGenomicsToolkit/cactus](https://github.com/xjtu-omics/ANNEVO))是一种基于深度学习的从头开始的基因注释方法，用于理解基因组功能。ANNEVO 能够直接从基因组中模拟不同物种的远端序列信息和联合进化关系。
 
 
-**Important: back up your alignment file before attempting any of these operations. If something goes wrong, the file may be completely unrecoverable.**
-## Deleting a genome
-Deleting a genome is easy. Just run:
+## 安装
+比较推荐两种方式
+1.使用git clone安装然后编译
 ```sh
-halRemoveGenome <hal file> <genome to delete>
+git clone https://github.com/xjtu-omics/ANNEVO.git
+cd ANNEVO
+```
+2.直接使用conda安装
+```sh
+conda create -n ANNEVO_v2 python=3.10
 ```
 
 The parent ancestral genome of the genome you deleted will still hang around, since it's needed to establish the alignment relationships between the other genomes in the parent's subtree and its supertree. Only leaf genomes can be deleted, though reconstructed genomes may be deleted if all their children have already been deleted (since in that case they would now be a leaf genome).
