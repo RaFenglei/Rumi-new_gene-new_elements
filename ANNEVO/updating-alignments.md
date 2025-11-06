@@ -29,9 +29,7 @@ cd /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/02.ANNEVO/01.de
 echo End Time is `date`
 ```
 **但是如果你是有GPU的，还是建议使用下面的Step-by-step Execution生成**
-
 1：预测每个核苷酸的三种信息类型（建议在 GPU 资源丰富的环境中执行）
-
 2：将 3 类信息解码为生物学上有效的基因结构（建议在 CPU 资源丰富的环境中进行）
 ```sh
 # Nucleotide prediction
@@ -41,82 +39,57 @@ python prediction.py --genome path_to_genome --model_path path_to_model --model_
 python decoding.py --genome path_to_genome --model_prediction_path path_to_save_predction --output path_to_gff --threads 48 
 ```
 
-The parent ancestral genome of the genome you deleted will still hang around, since it's needed to establish the alignment relationships between the other genomes in the parent's subtree and its supertree. Only leaf genomes can be deleted, though reconstructed genomes may be deleted if all their children have already been deleted (since in that case they would now be a leaf genome).
-
-The HAL file will remain the same size, since the genome data offsets cannot easily be shifted. If you need a smaller HAL file, check out the documentation for the `h5repack` command, or use the `halExtract` tool from the HAL toolkit (which is a bit slower than `h5repack`.
-
-## Generating update recipes with cactus-update-prepare
-
-The instructions below to add new genomes are fiddly and error-prone, even for cactus experts.  Consider using [cactus-update-prepare](../doc/cactus-update-prepare.md) to print out an exact recipe for your data!
-
-## Adding a new genome
-Adding a new genome can be fairly complicated. The first thing to do is to determine *how* the genome should be added into the species tree: by splitting an existing branch (**add-to-branch**) or by adding the new genome as a child of an existing ancestral genome (**add-to-node**). These two ways allow you to maintain whatever species tree shape you want. Adding a genome to a node is slightly easier (it involves creating only one alignment rather than two), but may be more expensive since the alignment involves more genomes than in the add-to-branch case. Check out this handy diagram, showing the different ways that a genome "6" can be added:
-
-![Different ways of adding a genome](add-genome-fig-github.png)
-
-### Adding to a branch
-Splitting a branch involves creating two alignments. This involves creating two separate Cactus alignments, one after the other. You'll have to start with the bottom half, since you're inferring a new ancestor. Here's what that might look like, where `genome6`, `genome7` etc. reflect 6, 7, etc. from the diagram (your names and FASTA locations should reflect the genomes in your tree):
-
-"bottom_half.txt"
-```
-((genome6, genome4)genome7, genome3)genome5;
-
-genome6 genome6.fa
-genome4 genome4.fa
-[...]
-```
-
-Then, run that alignment as normal, i.e. `cactus jobStore bottom_half.txt bottom_half.hal --root genome7 [--options]`. The `--root genome7` option is included here because we only want genome3 as outgroup information to help us infer genome7 more accurately.
-
-After that's complete, you can work on the top half. First, you'll need to extract the FASTA file for the genome you just inferred:
-
-```
-hal2fasta bottom_half.hal genome7 > genome7.fa
-```
-
-Then create a file that looks something like (again, filling in whatever makes sense in your tree):
-
-"top_half.txt"
-```
-(genome7, genome3)genome5;
-
-genome7 genome7.fa
-genome3 genome3.fa
-genome5 genome5.fa
-```
-
-Use that to run Cactus again, creating `top_half.hal`.
-
-Now you can modify your HAL file (ensuring you've backed it up):
-```
-halAddToBranch <your original alignment hal file> bottom_half.hal top_half.hal genome5 genome7 genome4 genome6 <length of genome5-genome7 branch> <length of genome7-genome6 branch>
-```
-which isn't exactly obvious. The meaning behind specifying these genomes is to orient the process, showing which genomes actually need to be updated or inserted in which places.
-
-The branch lengths don't impact the alignment at this stage, they only impact the Newick tree that HAL displays.
-### Adding to a node
-Adding a genome as a new child of an existing ancestor requires creating only a single alignment (though that alignment will be more computationally expensive than usual, since it will involve more genomes than in the add-to-branch case). Again following our example, the sequence file should look something like this, with names and paths modified to suit your specific situation:
-
-"add_to_node.txt"
-```
-(genome4, genome6, genome3)genome5;
-
-genome6 genome6.fa
-genome5 genome5.fa
-[...]
-```
-
-Run this alignment as you would normally to create "add_to_node.hal". Then you can run:
-```
-halReplaceGenome alignment_to_add_to.hal --bottomAlignmentFile add_to_node.hal --topAlignmentFile alignment_to_add_to.hal genome5
-```
-
-After that, `alignment_to_add_to.hal` should contain the new genome.
-## Replacing a genome
-A genome can be replaced (for example to update an assembly version) by removing it and then following the "add-to-node" procedure to add the new version back as a child of its parent.
-## Validating the file
-It's a good idea to run a validation against the resulting file to make sure the operation went OK. Run:
+## Step 3：重训练模型
+官方只提供了Mammalia等比较常见的谱系模型，如果需要在特定进化枝上合并其他物种或重新训练 ANNEVO （比如利用注释最好的牛羊鹿训练反刍谱系模型），可以按照以下脚本进行作：
 ```sh
-halValidate --genome <genome you modified> <hal file>
+train_species_list="The species list used for training model"
+val_species_list="The species list used for validating model"
+h5_data_path="The path to store h5 file" 
+mkdir -p tmp
+
+# The file must be cleared before each run.
+rm -f ${h5_data_path}/train.h5 ${h5_data_path}/train_with_intergenic.h5
+rm -f ${h5_data_path}/val.h5 ${h5_data_path}/val_with_intergenic.h5
+
+for species_name in "${train_species_list[@]}"; do
+    path_to_genome="The path to species genome"
+    path_to_annotation="The path to species annotation"
+    # Filter out duplicated gene IDs and other issues that may cause parsing errors in the Biopython package
+    python src/filter_wrong_record.py --input_file ${path_to_annotation} --output_file "tmp/tmp_${species_name}.gff"
+    # Convert the genome sequence and annotation into H5 data for model training.
+    python generate_datasets.py --genome ${path_to_genome} --annotation "tmp/tmp_${species_name}.gff" --output_file "${h5_data_path}/train" --threads 64
+    rm -f "tmp/tmp_${species_name}.gff"
+done
+for species_name in "${val_species_list[@]}"; do
+    path_to_genome="The path to species genome"
+    path_to_annotation="The path to species annotation"
+    python src/filter_wrong_record.py --input_file ${path_to_annotation} --output_file "tmp/tmp_${species_name}.gff"
+    python generate_datasets.py --genome ${path_to_genome} --annotation "tmp/tmp_${species_name}.gff" --output_file "${h5_data_path}/val" --threads 64
+    rm -f "tmp/tmp_${species_name}.gff"
+done
+
+# Train the deep learning model
+python model_train.py --h5_path ${h5_data_path} --model_save_path path_to_new_model.pt
 ```
-If it doesn't raise an error, you should be good to go! If it does raise an error, please raise an issue on the [HAL github page](https://github.com/ComparativeGenomicsToolkit/hal).
+
+**当然，如果只是发现与你的物种密切相关的物种的基因组有限或者不可使用时间，可以选择 ANNEVO 的五种主要训练模型之一作为微调的起点**
+```sh
+# Filter out duplicated gene IDs and other issues that may cause parsing errors in the Biopython package
+fine_tune_species_list="The species list used for fine tuning model"
+h5_data_path="The path to store h5 file"
+mkdir -p tmp
+
+# The file must be cleared before each run.
+rm -f ${h5_data_path}/fine_tune.h5 ${h5_data_path}/fine_tune_with_intergenic.h5
+
+for species_name in "${fine_tune_species_list[@]}"; do
+    path_to_genome="The path to species genome"
+    path_to_annotation="The path to species annotation"
+    python src/filter_wrong_record.py --input_file ${path_to_annotation} --output_file "tmp/tmp_${species_name}.gff"
+    python generate_datasets.py --genome ${path_to_genome} --annotation "tmp/tmp_${species_name}.gff" --output_file "${h5_data_path}/fine_tune" --threads 64
+    rm -f "tmp/tmp_${species_name}.gff"
+done
+
+# Fine tuning deep learning model
+python fine_tune.py --model_path path_to_existing_model.pt --model_save_path path_to_new_model.pt --h5_path ${h5_data_path}
+```
