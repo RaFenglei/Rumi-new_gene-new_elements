@@ -13,6 +13,7 @@ cd ANNEVO
 ```sh
 conda create -n ANNEVO_v2 python=3.10
 ```
+**需要注意的是，我们服务器暂时没有配置GPU，所以安装好直接使用即可，无需再安装CUDA等配套软件**
 
 The parent ancestral genome of the genome you deleted will still hang around, since it's needed to establish the alignment relationships between the other genomes in the parent's subtree and its supertree. Only leaf genomes can be deleted, though reconstructed genomes may be deleted if all their children have already been deleted (since in that case they would now be a leaf genome).
 
