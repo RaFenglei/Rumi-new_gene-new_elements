@@ -1,32 +1,21 @@
 # 使用Cactus在最外枝添加基因组
 [Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/tree/master)是一个无参考的全基因组比对程序，并且也可以用来构建Pan-genome
+**本文以新基因新元件课题为例，展示了如何在Cactus现有系统发育树最外层添加一个human分支**
 
+参考路径：/data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactuss/02.add_human
 
 ## Step 1：安装
-比较推荐两种方式
-1.使用git clone安装然后编译
-```sh
-git clone https://github.com/xjtu-omics/ANNEVO.git
-cd ANNEVO
-```
-2.直接使用conda安装
-```sh
-conda create -n ANNEVO_v2 python=3.10
-```
-**需要注意的是，我们服务器暂时没有配置GPU，所以安装好直接使用即可，无需再安装CUDA等配套软件**
+Cactus安装请参考github，本文直接使用了Bao Wang(Postdoc, Northwestern Polytechnical University)和Zecheng Du(PhD Candidate, Northwestern Polytechnical University)路径下的Cactus
+提取现有HAL文件的根节点
 
-## Step 2：使用
-**由于我们没有GPU，所以只能使用One-step Execution直接生成gff，经过测试，一个2.5G左右的哺乳动物基因组使用哺乳动物模型来执行的话，CPU大约需要1天，GPU大约需要5分钟**
-```sh
-echo Start Time is `date`
-cd /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/02.ANNEVO/01.deer_test
 
-#set -e
-#source ~/bin/cactus-bin-v1.2.3/venv/bin/activate
+## Step 2：提取现有HAL文件的根节点
+我们首先使用halStats查看hal中的根节点，发现是Anc00
+```txt
+$halStats ../01.genome/out.hal
 
-/public/home/liyongxin/lilisen/miniconda3/envs/ANNEVO/bin/python /public/home/liyongxin/lilisen/soft/ANNEVO/ANNEVO-main/annotation.py --genome mhl.hifiasm.hic.hap1.fasta --lineage Mammalia --output mhl.annevo.gff --threads 128
-
-echo End Time is `date`
+hal v2.2
+((camel:0.0244494,(pig:0.0269299,((xilu:0.0318519,((pronghorn:0.0119009,(giraffe:0.00409218,okapi:0.00623621)Anc10:0.00487476)Anc08:0.000706151,((muskdeer:0.00961721,(cattle:0.0071056,(sheep:0.00238328,goat:0.0023734)Anc16:0.0058297)Anc13:0.00197833)Anc11:0.000900202,(((reev_muntjac:0.0041239,ECEP:0.00390819)Anc17:0.000983137,(TUNLU:0.00275209,(TL:0.00249469,((mhl:0.00071661,ML:0.000762197)Anc23:0.000915221,PL:0.00192979)Anc22:0.000477065)Anc21:0.000227643)Anc18:0.00125769)Anc14:0.000957613,((HJ:0.00410087,PZ:0.00410087)Anc19:0.00263453,(mule_deer:0.00285365,XL:0.00281675)Anc20:0.00210855)Anc15:0.000927252)Anc12:0.0056893)Anc09:0.000885046)Anc06:0.0111833)Anc04:0.0106196,(hippo:0.0192975,(gray_whale:0.00756346,killer_whale:0.00970889)Anc07:0.0108208)Anc05:0.00218731)Anc03:0.00439133)Anc02:0.00331519)Anc01:0.0162236,tapir:0.0162236)Anc00;
 ```
 **但是如果你是有GPU的，还是建议使用下面的Step-by-step Execution生成**
 1：预测每个核苷酸的三种信息类型（建议在 GPU 资源丰富的环境中执行）
@@ -98,4 +87,5 @@ python fine_tune.py --model_path path_to_existing_model.pt --model_save_path pat
 ## Reference:
 
 [Cactus论文](https://www.nature.com/articles/s41586-020-2871-y)
+
 [Hal论文](https://academic.oup.com/bioinformatics/article/29/10/1341/256598?login=false)
