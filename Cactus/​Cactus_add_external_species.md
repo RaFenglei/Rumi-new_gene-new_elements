@@ -100,6 +100,29 @@ jobstore_human/out_with_human.hal​​ - ​​最重要的文件​​，包�
 
 ​​jobstore_human/AncHuman.fa​​ - 新根节点AncHuman的祖先序列
 
+
+## Step 5：添加全新的branch到hal文件中
+```sh
+cat > 03.cactus_add_Branch.sh << 'EOF'
+#!/usr/bin/bash
+#PBS -V
+set -exo
+
+#source /public/home/wangwen_lab/lizihe/.bashrc
+#conda activate /public/home/wangwen_lab/lizihe/soft/anaconda3/envs/cactus
+#export PATH=/public/home/wangwen_lab/lizihe/soft/cactus-bin-v2.9.4/bin:$PATH
+
+cd /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactuss/02.add_human
+
+cp jobstore_human/out_with_human.hal out_with_human.hal
+halAppendSubtree out_with_human.hal 01.existing_tree.hal Anc00 Anc00 --merge --hdf5InMemory
+halValidate out_with_human.hal --hdf5InMemory
+EOF
+```
+把之前Anc00和human比对得到的out_with_human.hal​​作为新的branch添加入原来的hal文件中即可运行
+
+
+
 同时你需要注意的是
 （1）如果是在计算节点直接运行，请先加载环境
 ``` sh
