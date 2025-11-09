@@ -1,8 +1,9 @@
-# 使用Cactus在最外枝添加基因组
+# 使用Cactus得到两两物种比对的chain文件，然后转化为Reciprocal Best的chain作为TOGA的输入来鉴定新基因
 [Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/tree/master)是一个无参考的全基因组比对程序，并且也可以用来构建Pan-genome
-**本文以新基因新元件课题为例，展示了如何在Cactus现有系统发育树最外层添加一个human分支**
-
-参考路径：/data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactuss/02.add_human
+**本文以新基因新元件课题为例，展示了如何从Cactus得到的hal文件中一步一步得到两两物种比对的Reciprocal Best Chian文件**
+参考教程一：从hal中提取chain文件，https://ucsc-ci.com/comparativegenomicstoolkit/cactus/-/blob/167179fcff6e09d7864170013c15029da04d8841/doc/progressive.md
+参考教程二：处理chain文件得到Reciprocal Best Chian文件，http://genomewiki.ucsc.edu/index.php/HowTo:_Syntenic_Net_or_Reciprocal_Best
+参考路径：/data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactus/03.hal2chain
 
 ## Step 1：安装
 Cactus安装请参考github，本文直接使用了Bao Wang(Postdoc, Northwestern Polytechnical University)和Zecheng Du(PhD Candidate, Northwestern Polytechnical University)路径下的Cactus
