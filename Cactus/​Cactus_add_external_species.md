@@ -2,6 +2,7 @@
 [Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/tree/master)是一个无参考的全基因组比对程序，并且也可以用来构建Pan-genome
 **本文以新基因新元件课题为例，展示了如何在Cactus现有系统发育树最外层添加一个human分支**
 
+参考教程：https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/updating-alignments.md
 参考路径：/data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactuss/02.add_human
 
 ## Step 1：安装
