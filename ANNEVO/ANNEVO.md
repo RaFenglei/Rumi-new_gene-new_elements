@@ -93,3 +93,10 @@ done
 # Fine tuning deep learning model
 python fine_tune.py --model_path path_to_existing_model.pt --model_save_path path_to_new_model.pt --h5_path ${h5_data_path}
 ```
+
+## Step 4：BUSCO验证结果质量
+
+
+
+
+
