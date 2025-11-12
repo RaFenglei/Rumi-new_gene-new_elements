@@ -1,6 +1,7 @@
 # 使用ANNEVO来注释基因组
 [ANNEVO](https://github.com/xjtu-omics/ANNEVO)是一种基于深度学习的从头开始的基因注释方法，用于理解基因组功能。ANNEVO 能够直接从基因组中模拟不同物种的远端序列信息和联合进化关系。
 
+参考目录：/data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/02.ANNEVO/01.deer_test
 
 ## Step 1：安装
 比较推荐两种方式
