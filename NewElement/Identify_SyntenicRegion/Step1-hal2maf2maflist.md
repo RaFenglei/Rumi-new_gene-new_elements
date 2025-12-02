@@ -17,7 +17,7 @@ Cactus安装请参考github，本文直接使用了Bao Wang(Postdoc, Northwester
 ## Step 2：从HAL文件中提取对应的maf文件
 我们首先使用halStats查看hal中的根节点，发现是Anc00
 ```sh
-
+cat > ./01.Cervidae_deer_ref/01.hal_to_maf.sh << 'EOF'
 mkdir -p qsub_shell
 mkdir -p deerref
 mkdir -p tmp
@@ -34,10 +34,10 @@ cd deerref
 cactus-hal2maf ./js$(($i+1)) /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactus/04.add_xilu_new/01.existing_tree.hal 26sp.${chrom_name}.deer_ref.hal2maf.maf.gz --chunkSize 500000 --refGenome mhl --refSequence $chrom_name --noAncestors --batchCores 32 --filterGapCausingDupes --targetGenomes mhl,ML,PL,TUNLU,TL,ECEP,reev_muntjac,PZ,mule_deer,XL,goat,sheep,cattle,muskdeer,okapi,giraffe,pronghorn,xilu,hippo,gray_whale,killer_whale,pig,camel,tapir,human,mouse --workDir /data02/zhangfenglei/project/09.new_gene_elements/03.new_peak/01.hal2maf/01.verson1/01.Cervidae_deer_ref/tmp
 zcat 26sp.${chrom_name}.deer_ref.hal2maf.maf.gz | mafDuplicateFilter -k -m - > 26sp.${chrom_name}.deer_ref.hal2maf.single.maf" > qsub_shell/mhl_$(($i+1)).sh
 done
+EOF
 ```
 
-然后
-我们选择的物种是mhl,ECEP,PZ,XL,sheep,cattle,muskdeer,giraffe,pronghorn,xilu作为反刍动物每个科（其中鹿科是每个族、牛科是每个亚科选了一个代表物种）来得到相对于其他所有物种的(mhl,ML,PL,TL,TUNLU,ECEP,reev_muntjac,HJ,PZ,mule_deer,XL,goat,sheep,cattle,muskdeer,okapi,giraffe,pronghorn,xilu,hippo,gray_whale,killer_whale,pig,camel,tapir,human)chain文件
+投递运行完子脚本后，我们就可以在./01.Cervidae_deer_ref/deerref找到
 
 
 ## Step 3：创建新的系统发育树定义
