@@ -1,25 +1,39 @@
-# 使用Cactus得到两两物种比对的chain文件，然后转化为Reciprocal Best的chain作为TOGA的输入来鉴定新基因
+# 使用Cactus得到多物种比对的maf文件，然后转化为maflist文件作为输入来鉴定保守的插入和缺失
 [Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/tree/master)是一个无参考的全基因组比对程序，并且也可以用来构建Pan-genome
-**本文以新基因新元件课题为例，展示了如何从Cactus得到的hal文件中一步一步得到两两物种比对的Reciprocal Best Chian文件**
+**本文以新基因新元件课题为例，展示了如何从Cactus得到的hal文件中一步一步得到maf文件和maflist文件**
 
-参考教程一：从hal中提取chain文件，https://ucsc-ci.com/comparativegenomicstoolkit/cactus/-/blob/167179fcff6e09d7864170013c15029da04d8841/doc/progressive.md
+参考教程一：从hal中提取maf文件，https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/src/cactus/maf/cactus_hal2maf.py
 
-参考教程二：处理chain文件得到Reciprocal Best Chian文件，http://genomewiki.ucsc.edu/index.php/HowTo:_Syntenic_Net_or_Reciprocal_Best
+参考教程二：使用本方法发表的文献，https://www.nature.com/articles/s41467-024-50529-0
 
-参考路径：/data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactus/03.hal2chain
+参考路径：
+hal2maf参考路径/data02/zhangfenglei/project/09.new_gene_elements/03.new_peak/01.hal2maf/01.verson1
 
 ## Step 1：安装
 Cactus安装请参考github，本文直接使用了Bao Wang(Postdoc, Northwestern Polytechnical University)和Zecheng Du(PhD Candidate, Northwestern Polytechnical University)路径下的Cactus
 提取现有HAL文件的根节点
 
 
-## Step 2：提取现有HAL文件的所以genome
+## Step 2：从HAL文件中提取对应的maf文件
 我们首先使用halStats查看hal中的根节点，发现是Anc00
-```txt
-$halStats out_with_human.hal
+```sh
 
-hal v2.2
-(((camel:0.0244494,(pig:0.0269299,((xilu:0.0318519,((pronghorn:0.0119009,(giraffe:0.00409218,okapi:0.00623621)Anc10:0.00487476)Anc08:0.000706151,((muskdeer:0.00961721,(cattle:0.0071056,(sheep:0.00238328,goat:0.0023734)Anc16:0.0058297)Anc13:0.00197833)Anc11:0.000900202,(((reev_muntjac:0.0041239,ECEP:0.00390819)Anc17:0.000983137,(TUNLU:0.00275209,(TL:0.00249469,((mhl:0.00071661,ML:0.000762197)Anc23:0.000915221,PL:0.00192979)Anc22:0.000477065)Anc21:0.000227643)Anc18:0.00125769)Anc14:0.000957613,((HJ:0.00410087,PZ:0.00410087)Anc19:0.00263453,(mule_deer:0.00285365,XL:0.00281675)Anc20:0.00210855)Anc15:0.000927252)Anc12:0.0056893)Anc09:0.000885046)Anc06:0.0111833)Anc04:0.0106196,(hippo:0.0192975,(gray_whale:0.00756346,killer_whale:0.00970889)Anc07:0.0108208)Anc05:0.00218731)Anc03:0.00439133)Anc02:0.00331519)Anc01:0.0162236,tapir:0.0162236)Anc00:0.0162236,human:0.0162236)AncHuman;
+mkdir -p qsub_shell
+mkdir -p deerref
+mkdir -p tmp
+
+declare -a chromosomes=("chr1a" "chr2a" "chr3a" "chr4a" "chr5a" "chr6a" "chr7a" "chr8a" "chr9a" "chr10a" "chr11a" "chr12a" "chr13a" "chr14a" "chr15a" "chr16a" "chr17a" "chr18a" "chr19a" "chr20a" "chr21a" "chr22a" "chr23a" "chr24a" "chr25a" "chr26a" "chr27a" "chr28a" "chr29a" "chr30a" "chr31a" "chr32a" "chrX" "chrY")
+
+for i in "${!chromosomes[@]}"; do
+    chrom_name="${chromosomes[i]}"
+    echo "source /public/home/wangwen_lab/zhouxiaofang/.bashrc
+cd /data02/zhangfenglei/project/09.new_gene_elements/03.new_peak/01.hal2maf/01.verson1/01.Cervidae_deer_ref
+source activate python3
+source ~zhoujiong/software/cactus-bin-v2.8.2/venv-cactus-v2.8.2/bin/activate
+cd deerref
+cactus-hal2maf ./js$(($i+1)) /data02/zhangfenglei/project/09.new_gene_elements/02.new_gene/01.cactus/04.add_xilu_new/01.existing_tree.hal 26sp.${chrom_name}.deer_ref.hal2maf.maf.gz --chunkSize 500000 --refGenome mhl --refSequence $chrom_name --noAncestors --batchCores 32 --filterGapCausingDupes --targetGenomes mhl,ML,PL,TUNLU,TL,ECEP,reev_muntjac,PZ,mule_deer,XL,goat,sheep,cattle,muskdeer,okapi,giraffe,pronghorn,xilu,hippo,gray_whale,killer_whale,pig,camel,tapir,human,mouse --workDir /data02/zhangfenglei/project/09.new_gene_elements/03.new_peak/01.hal2maf/01.verson1/01.Cervidae_deer_ref/tmp
+zcat 26sp.${chrom_name}.deer_ref.hal2maf.maf.gz | mafDuplicateFilter -k -m - > 26sp.${chrom_name}.deer_ref.hal2maf.single.maf" > qsub_shell/mhl_$(($i+1)).sh
+done
 ```
 
 然后
